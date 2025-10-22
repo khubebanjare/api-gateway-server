@@ -18,6 +18,12 @@ spring:
     redis:
       host: localhost        # or your Redis server IP / DNS
       port: 6379
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://localhost:7080/realms/master/protocol/openid-connect/certs"
+
 management:
   endpoints:
     web:
