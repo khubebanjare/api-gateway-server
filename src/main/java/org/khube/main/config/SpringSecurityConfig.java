@@ -6,6 +6,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @EnableWebFluxSecurity
@@ -31,21 +33,14 @@ public class SpringSecurityConfig {
         return  http.build();
     }
 
-//    // Convert JWT roles from realm_access.roles or client roles to Spring authorities
-//    private Converter<Jwt, ? extends AbstractAuthenticationToken> grantedAuthoritiesExtractor() {
-//        JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter(); // default 'scope' -> SCOPE_*
-//        return new JwtAuthenticationConverter() {{
-//            setJwtGrantedAuthoritiesConverter(jwt -> {
-//                Collection<GrantedAuthority> authorities = new HashSet<>(converter.convert(jwt));
-//                // map realm_access.roles -> ROLE_{role}
-//                Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
-//                if (realmAccess != null && realmAccess.containsKey("roles")) {
-//                    @SuppressWarnings("unchecked")
-//                    Collection<String> roles = (Collection<String>) realmAccess.get("roles");
-//                    roles.forEach(r -> authorities.add(new SimpleGrantedAuthority("ROLE_" + r)));
-//                }
-//                return authorities;
-//            });
-//        }};
-//    }
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
+        converter.setAuthoritiesClaimName("realm_access.roles"); // or custom mapper
+        converter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+        jwtConverter.setJwtGrantedAuthoritiesConverter(converter);
+        return jwtConverter;
+    }
 }
